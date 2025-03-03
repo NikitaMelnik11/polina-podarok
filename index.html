@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Для Полины</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Стили для видео-фона */
+        .video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .video-background::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 1;
+        }
+
+        .video-background video {
+            position: absolute;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            object-fit: cover;
+        }
+
+        .home-page {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            width: 100%;
+            height: 100vh;
+            transition: opacity 0.5s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .btn-listen {
+            background: linear-gradient(45deg, #ff9a9e 0%, #fad0c4 99%, #fad0c4 100%);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            padding: 15px 30px;
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            transform: translateY(0);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-listen:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .btn-listen:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.25);
+        }
+
+        .btn-listen:hover:before {
+            left: 100%;
+        }
+
+        .content-page {
+            display: none;
+            flex-direction: column;
+            width: 100%;
+            min-height: 100vh;
+            padding-bottom: A30px;
+            transition: opacity 0.5s ease;
+            opacity: 0;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+
+        .video-container {
+            width: 100%;
+            margin: 20px 0;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        video {
+            width: 100%;
+            display: block;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            width: 100%;
+            margin-top: 20px;
+            padding: 0 15px;
+        }
+
+        .gallery-item {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            aspect-ratio: 1/1;
+            position: relative;
+        }
+
+        .gallery-item:hover {
+            transform: scale(1.03);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Модальное окно для просмотра фото в полном размере */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            max-width: 90%;
+            max-height: 90vh;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .modal-content img {
+            width: 100%;
+            height: auto;
+            max-height: 90vh;
+            object-fit: contain;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 110;
+        }
+
+        .close-modal:before,
+        .close-modal:after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 2px;
+            background-color: white;
+        }
+
+        .close-modal:before {
+            transform: rotate(45deg);
+        }
+
+        .close-modal:after {
+            transform: rotate(-45deg);
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.7);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .back-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .title {
+            font-size: 28px;
+            color: white;
+            margin-bottom: 40px;
+            text-align: center;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6);
+        }
+
+        .content-title {
+            font-size: 24px;
+            color: #444;
+            margin: 80px 0 20px;
+            text-align: center;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Видео-фон для начальной страницы -->
+        <div class="video-background" id="video-background">
+            <video autoplay muted loop playsinline id="bg-video">
+                <source src="/polina/video/gggg.mp4" type="video/mp4">
+            </video>
+        </div>
+        
+        <div class="home-page" id="home-page">
+            <h1 class="title">Для тебя, Полина</h1>
+            <button class="btn-listen" id="listenBtn">Полина, послушай</button>
+        </div>
+        
+        <div class="content-page" id="content-page">
+            <button class="back-btn" id="backBtn">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+            </button>
+            
+            <h2 class="content-title">Специально для тебя</h2>
+            
+            <div class="video-container">
+                <video id="content-video" controls>
+                    <source src="/polina/video/видео восп.mp4" type="video/mp4">
+                    Ваш браузер не поддерживает видео.
+                </video>
+            </div>
+            
+            <div class="gallery">
+                <!-- Здесь будут фотографии -->
+                <div class="gallery-item">
+                    <img src="/polina/img/восп1.jpg" alt="Фото 1">
+                </div>
+                <div class="gallery-item">
+                    <img src="/polina/img/восп2.jpg" alt="Фото 2">
+                </div>
+                <div class="gallery-item">
+                    <img src="/polina/img/восп3.jpg" alt="Фото 3">
+                </div>
+                <div class="gallery-item">
+                    <img src="/polina/img/восп4.jpg" alt="Фото 4">
+                </div>
+                <div class="gallery-item">
+                    <img src="/polina/img/восп5.jpg" alt="Фото 5">
+                </div>
+                <div class="gallery-item">
+                    <img src="/polina/img/восп6.jpg" alt="Фото 6">
+                </div>
+                <div class="gallery-item">
+                    <img src="/polina/img/восп7.jpg" alt="Фото 7">
+                </div>
+                <div class="gallery-item">
+                    <img src="/polina/img/восп8.jpg" alt="Фото 8">
+                </div>
+                <div class="gallery-item">
+                    <img src="/polina/img/восп9.jpg" alt="Фото 9">
+                </div>
+                <div class="gallery-item">
+                    <img src="/polina/img/восп10.jpg" alt="Фото 10">
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно для просмотра фото -->
+        <div class="modal" id="photoModal">
+            <div class="close-modal" id="closeModal"></div>
+            <div class="modal-content">
+                <img id="modalImage" src="" alt="Фото">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const homePage = document.getElementById('home-page');
+            const contentPage = document.getElementById('content-page');
+            const listenBtn = document.getElementById('listenBtn');
+            const backBtn = document.getElementById('backBtn');
+            const videoBackground = document.getElementById('video-background');
+            const bgVideo = document.getElementById('bg-video');
+            const contentVideo = document.getElementById('content-video');
+            const modal = document.getElementById('photoModal');
+            const modalImage = document.getElementById('modalImage');
+            const closeModal = document.getElementById('closeModal');
+            
+            // Проверяем доступность воспроизведения видео на мобильных устройствах
+            function checkVideoPlayback() {
+                // Для iOS устройств необходимо запустить видео после взаимодействия с пользователем
+                bgVideo.play().catch(function(error) {
+                    console.log("Автовоспроизведение отключено, видео будет запущено после нажатия на кнопку");
+                });
+                
+                // Оптимизация воспроизведения для разных устройств
+                bgVideo.addEventListener('loadeddata', function() {
+                    // Уменьшаем качество видео для мобильных устройств
+                    if (window.innerWidth < 768) {
+                        if (bgVideo.videoHeight > 720) {
+                            bgVideo.style.height = '100%';
+                            bgVideo.style.width = 'auto';
+                        }
+                    }
+                });
+            }
+            
+            checkVideoPlayback();
+            
+            // Обработчик нажатия на кнопку "Полина, послушай"
+            listenBtn.addEventListener('click', function() {
+                homePage.style.opacity = '0';
+                setTimeout(() => {
+                    homePage.style.display = 'none';
+                    videoBackground.style.display = 'none';
+                    bgVideo.pause(); // Останавливаем фоновое видео для экономии ресурсов
+                    contentPage.style.display = 'flex';
+                    setTimeout(() => {
+                        contentPage.style.opacity = '1';
+                        contentVideo.play();
+                    }, 50);
+                }, 500);
+            });
+            
+            // Обработчик нажатия на кнопку "Назад"
+            backBtn.addEventListener('click', function() {
+                contentVideo.pause();
+                contentPage.style.opacity = '0';
+                setTimeout(() => {
+                    contentPage.style.display = 'none';
+                    videoBackground.style.display = 'block';
+                    bgVideo.play(); // Возобновляем фоновое видео
+                    homePage.style.display = 'flex';
+                    setTimeout(() => {
+                        homePage.style.opacity = '1';
+                    }, 50);
+                }, 500);
+            });
+            
+            // Эффект нажатия на кнопку
+            listenBtn.addEventListener('mousedown', function() {
+                this.style.transform = 'scale(0.95) translateY(-3px)';
+            });
+            
+            listenBtn.addEventListener('mouseup', function() {
+                this.style.transform = 'scale(1) translateY(-5px)';
+            });
+            
+            // Просмотр фотографий в полном размере
+            const galleryItems = document.querySelectorAll('.gallery-item img');
+            galleryItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    modalImage.src = this.src;
+                    modal.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                });
+            });
+            
+            // Закрытие модального окна
+            closeModal.addEventListener('click', function() {
+                modal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            });
+            
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                    document.body.style.overflow = 'auto';
+                }
+            });
+
+            // Обработка поворота устройства для адаптации видео
+            window.addEventListener('orientationchange', function() {
+                setTimeout(function() {
+                    checkVideoPlayback();
+                }, 300);
+            });
+        });
+    </script>
+</body>
+</html>
